@@ -249,7 +249,7 @@ def collect_reddit_signals(subreddit, retries=3, limit=25):
     return fetch_pullpush(subreddit, retries, limit)
 
 
-def fetch_hn_algolia(retries=3, limit=25, query="wish there was a tool"):
+def fetch_hn_algolia(retries=3, limit=25, query='"wish there was a tool"'):
     # Parentheses mean OR. tags=story,comment would require both tags.
     params = urllib.parse.urlencode(
         {"query": query, "tags": "(story,comment)", "hitsPerPage": limit}
@@ -337,7 +337,7 @@ def main(argv=None):
     )
     parser.add_argument("--retries", type=int, choices=range(1, 6), default=3)
     parser.add_argument("--output-csv", default="radar_latest_scan.csv")
-    parser.add_argument("--hn-query", default="wish there was a tool")
+    parser.add_argument("--hn-query", default='"wish there was a tool"')
     parser.add_argument("--mock-self-test", action="store_true")
     parser.add_argument("--generate-tweet", action="store_true")
     args = parser.parse_args(argv)

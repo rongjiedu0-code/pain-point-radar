@@ -30,12 +30,17 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Queued scheduled/manual runs must include the previous run's CSV
+          # commit rather than checking out an older event SHA.
+          ref: ${{ github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Validate V3 syntax and regression tests
         run: |
+          git rev-parse HEAD
           python3 -m py_compile pain_point_radar_v3_anti_block.py
           python3 -m unittest discover -s tests -v
 
