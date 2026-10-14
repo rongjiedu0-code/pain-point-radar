@@ -1,0 +1,69 @@
+name: AI Agent & Pain Point Radar Autopilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      subreddits:
+        description: '要扫描的 Reddit 版块 (逗号分隔)'
+        required: false
+        default: 'SaaS,smallbusiness,SideProject'
+      run_mode:
+        description: '运行模式 (live: 实时抓取Reddit | mock: 离线基准自测)'
+        required: false
+        default: 'live'
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  run-agents:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. 检出仓库代码 (Checkout Repository)
+        uses: actions/checkout@v4
+
+      - name: 2. 配置云端 Python 3.11 环境 (Setup Python)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 3. 运行 Cyber-Code-Shield V2 红队安全自检与上下文同步
+        run: |
+          if [ -f "argon_context_shield.py" ]; then
+            echo "### 🛡️ Cyber-Code-Shield V2 红队安全自检报告" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            python3 argon_context_shield.py --redteam-self-test --sync-agents-md --export-evidence evidence_bundle.json --why "GitHub Actions automated CI/CD security & context verification" | tee -a $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "未检测到 argon_context_shield.py，跳过该步。"
+          fi
+
+      - name: 4. 运行深雷达 (Pain Point Radar) 全自动商机扫描与发帖生成
+        run: |
+          if [ -f "pain_point_radar_engine.py" ]; then
+            echo "### 📡 Pain Point Radar (深雷达) 自动巡航报告" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            if [ "${{ github.event.inputs.run_mode }}" = "mock" ]; then
+              python3 pain_point_radar_engine.py --mock-self-test | tee -a $GITHUB_STEP_SUMMARY
+            else
+              SUBS="${{ github.event.inputs.subreddits }}"
+              if [ -z "$SUBS" ]; then SUBS="SaaS,smallbusiness,SideProject"; fi
+              python3 pain_point_radar_engine.py --subreddits "$SUBS" --limit 20 --output-csv radar_latest_scan.csv --generate-tweet || python3 pain_point_radar_engine.py --mock-self-test
+              python3 pain_point_radar_engine.py --mock-self-test >> $GITHUB_STEP_SUMMARY
+            fi
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "未检测到 pain_point_radar_engine.py，跳过该步。"
+          fi
+
+      - name: 5. 自动将最新扫描结果与 AGENTS.md 提交回仓库
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add AGENTS.md evidence_bundle.json radar_latest_scan.csv pain_point_radar_batch_test.csv 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "chore(autopilot): auto-update shared context & Pain Point Radar scan results"
+          git push || true
