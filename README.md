@@ -94,14 +94,15 @@ The bundled mock run uses synthetic records starting at **PR-011**; those record
 
 ## 🤖 4. Cloud Autopilot / GitHub Actions 自动巡航
 
-See [autopilot.yml](.github/workflows/autopilot.yml). The existing workflow still invokes the V2 `pain_point_radar_engine.py`; V3 is ready for local CLI use and has not been wired into Actions. It is configured for:
+See [autopilot.yml](.github/workflows/autopilot.yml). Actions now runs the **V3** CLI for scheduled, push, and manual runs.
 
-1. A daily run at **00:00 UTC / 北京时间 08:00**, pushes to main, and manual dispatch.
-2. Live Reddit scanning, CSV export, and terminal draft generation; manual mock mode is also available.
-3. Mock benchmark output in the Actions Job Summary. In live mode, the workflow currently appends a mock run to the summary, so distinguish it from live results in the job logs.
-4. An attempt to commit generated ledgers and optional audit/context files back to the repository.
+1. Daily run at **00:00 UTC / 北京时间 08:00**, pushes to main, and manual dispatch.
+2. Syntax and offline regression checks before collection.
+3. V3 live Reddit scan → scoring → CSV export and draft generation, or an explicitly selected **mock** demonstration. No automatic fallback from live failures to mock data.
+4. Job Summary and downloadable log/CSV artifacts preserve the selected mode and exit status. Partial/all-source failures fail the job; partial results remain available.
+5. Changed CSV ledgers are committed back to main. Commit/push errors remain visible instead of being suppressed.
 
-Live scan failures can fall back to mock mode. The workflow suppresses some commit/push errors, so inspect logs and repository history to confirm persistence. The optional Cyber-Code-Shield step is skipped when its script is absent.
+Actions 已切换到 V3。实时失败会明确显示，不再用模拟结果替代；手动 mock 模式单独标记。任务并发按分支串行执行，避免自动提交互相覆盖。
 
 ## 🛠️ 5. Roadmap / 后续规划
 
