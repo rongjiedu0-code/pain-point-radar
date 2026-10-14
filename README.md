@@ -8,9 +8,9 @@
 > **Stop guessing what to build. Start quantifying real user frustration.**
 > **别再凭空猜需求，用真实用户的痛点为产品方向排序。**
 
-Pain Point Radar scans Reddit communities (**r/SaaS**, **r/smallbusiness**, and **r/SideProject**), filters high-intent complaints, and ranks opportunities with the **Pain-to-Revenue Index**. The V3 CLI uses Reddit's public JSON endpoint with bounded exponential backoff and jitter, then reuses the V2 deterministic scoring and CSV engine. Both use Python's standard library.
+Pain Point Radar scans Reddit communities (**r/SaaS**, **r/smallbusiness**, and **r/SideProject**), filters high-intent complaints, and ranks opportunities with the **Pain-to-Revenue Index**. The V3.1 CLI tries public Reddit JSON, Reddit Atom feeds, and the PullPush archive, with a global HN Algolia fallback. It reuses V2 deterministic scoring and CSV export, uses bounded backoff, and records each result's source and publication/retrieval timestamps. Everything uses Python's standard library.
 
-深雷达通过 Reddit 公开 JSON 接口采集讨论，用意图关键词筛选痛点，再通过四维启发式规则评分，输出 CSV 和 X（Twitter）发帖草稿。评分用于初筛，仍需访谈和付费意愿验证。
+深雷达支持 Reddit JSON、Atom RSS、PullPush 归档与 HN Algolia 回退，用意图关键词筛选痛点，再以四维启发式规则评分并输出 CSV 和发帖草稿。每条结果保留真实来源与原帖/抓取时间；评分仍需访谈和付费意愿验证。
 
 ## 🧮 1. The 4D Pain-to-Revenue Scoring Formula / 四维评分
 
@@ -60,16 +60,19 @@ Outputs: `radar_latest_scan.csv` for live scans; `pain_point_radar_batch_test.cs
 
 Reddit may reject requests or return no matching signals. Check fetch errors and the CSV before interpreting an empty result as an absence of demand.
 
-### V3 resilience / V3 已就绪
+### V3.1 multi-source resilience / 多源回退已就绪
 
 [`pain_point_radar_v3_anti_block.py`](pain_point_radar_v3_anti_block.py) now implements the complete scan → intent filter → scoring → CSV/draft CLI. Syntax and offline regression tests pass.
 
 - `--retries 3` sets a bounded attempt count (1–5); transient HTTP 429/5xx and network failures use exponential backoff with jitter.
 - Numeric `Retry-After` is respected; waits above 60 seconds stop the source instead of retrying early. HTTP 403 and other non-retryable responses stop immediately.
-- Exit status: **0** successful collection (including zero matches), **1** all sources failed, **2** partial collection failure or invalid CLI input. If all sources fail, the existing CSV is preserved; partial results are exported with a nonzero status.
-- The V3 entry point requires the existing `pain_point_radar_engine.py` beside it. It does not implement proxy failover, HN/RSS/V2EX, Gemini, or Markdown summaries. Retries do not bypass access restrictions or guarantee live availability.
+- Exit status: **0** successful collection, including valid empty feeds or successful HN fallback; **1** all sources failed; **2** partial source failure with no successful HN fallback, or invalid CLI input. HN fallback success is explicitly marked as degraded subreddit coverage. If all sources fail, the existing CSV is preserved.
+- The V3 entry point requires the existing `pain_point_radar_engine.py` beside it. When Reddit JSON fails, it tries `old.reddit.com` Atom RSS, then the PullPush submission archive. If subreddit sources fail or no matching signals are found, it queries HN Algolia once globally with `--hn-query` (default: `wish there was a tool`).
+- HN uses `tags=(story,comment)` (OR), per the [Algolia API documentation](https://hn.algolia.com/api). HN is a separate community, not replacement coverage of a requested subreddit. PullPush is a third-party archive and may return older posts or be unavailable/rate-limited.
+- CSV adds `Source_Channel`, `Source_Post_ID`, `Source_Created_UTC`, `Retrieved_At_UTC`, and `Ingestion_Endpoint`. `Source_URL` points to the original Reddit/HN discussion. Archives retain their original publication dates and are labeled `pullpush_archive`.
+- Logs report actual HTTP responses and the selected source. There is no proxy rotation, rate-limit bypass, guaranteed HTTP 200, Gemini analysis, V2EX integration, or Markdown summary generation.
 
-V3 已接通评分与导出，支持有限重试和退避；遇到拒绝访问会停止。验证使用模拟响应，不代表 Reddit 实时接口或代理已验证可用。
+V3.1 已接通多源回退、评分、溯源和导出。遇到单源拒绝会停止请求该源并尝试其他公开来源，不伪装模拟数据；是否可用以每次运行日志为准，归档数据不等于刚发布的数据。
 
 ```bash
 python3 -m py_compile pain_point_radar_v3_anti_block.py
@@ -106,7 +109,7 @@ Actions 已切换到 V3。实时失败会明确显示，不再用模拟结果替
 
 ## 🛠️ 5. Roadmap / 后续规划
 
-- Hacker News Algolia, Reddit RSS, and V2EX ingestion.
+- V2EX ingestion and more configurable source coverage (Reddit Atom, PullPush and HN Algolia are implemented).
 - Gemini / local Ollama analysis and Markdown summary output.
 - Evidence-backed scoring with traceable sources and human validation.
 
