@@ -8,7 +8,7 @@
 > **Stop guessing what to build. Start quantifying real user frustration.**
 > **别再凭空猜需求，用真实用户的痛点为产品方向排序。**
 
-Pain Point Radar scans Reddit communities (**r/SaaS**, **r/smallbusiness**, and **r/SideProject**), filters high-intent complaints, and ranks opportunities with the **Pain-to-Revenue Index**. The current implementation uses Reddit's public JSON endpoint and deterministic keyword heuristics with Python's standard library.
+Pain Point Radar scans Reddit communities (**r/SaaS**, **r/smallbusiness**, and **r/SideProject**), filters high-intent complaints, and ranks opportunities with the **Pain-to-Revenue Index**. The V3 CLI uses Reddit's public JSON endpoint with bounded exponential backoff and jitter, then reuses the V2 deterministic scoring and CSV engine. Both use Python's standard library.
 
 深雷达通过 Reddit 公开 JSON 接口采集讨论，用意图关键词筛选痛点，再通过四维启发式规则评分，输出 CSV 和 X（Twitter）发帖草稿。评分用于初筛，仍需访谈和付费意愿验证。
 
@@ -45,13 +45,13 @@ git clone https://github.com/rongjiedu0-code/pain-point-radar.git
 cd pain-point-radar
 
 # Offline demonstration with synthetic signals / 离线模拟演示
-python3 pain_point_radar_engine.py --mock-self-test
+python3 pain_point_radar_v3_anti_block.py --mock-self-test
 
 # Live Reddit scan / 实时扫描
-python3 pain_point_radar_engine.py --subreddits SaaS,smallbusiness,SideProject --limit 15 --output-csv radar_latest_scan.csv
+python3 pain_point_radar_v3_anti_block.py --subreddits SaaS,smallbusiness,SideProject --limit 15 --output-csv radar_latest_scan.csv
 
 # Print an X thread draft for the top PROCEED lead / 输出发帖草稿
-python3 pain_point_radar_engine.py --limit 20 --generate-tweet
+python3 pain_point_radar_v3_anti_block.py --limit 20 --generate-tweet
 ```
 
 On Windows, use `python` if `python3` is unavailable.
@@ -59,6 +59,22 @@ On Windows, use `python` if `python3` is unavailable.
 Outputs: `radar_latest_scan.csv` for live scans; `pain_point_radar_batch_test.csv` for the offline demonstration. Drafts are printed to the terminal; nothing is posted to X automatically.
 
 Reddit may reject requests or return no matching signals. Check fetch errors and the CSV before interpreting an empty result as an absence of demand.
+
+### V3 resilience / V3 已就绪
+
+[`pain_point_radar_v3_anti_block.py`](pain_point_radar_v3_anti_block.py) now implements the complete scan → intent filter → scoring → CSV/draft CLI. Syntax and offline regression tests pass.
+
+- `--retries 3` sets a bounded attempt count (1–5); transient HTTP 429/5xx and network failures use exponential backoff with jitter.
+- Numeric `Retry-After` is respected; waits above 60 seconds stop the source instead of retrying early. HTTP 403 and other non-retryable responses stop immediately.
+- Exit status: **0** successful collection (including zero matches), **1** all sources failed, **2** partial collection failure or invalid CLI input. If all sources fail, the existing CSV is preserved; partial results are exported with a nonzero status.
+- The V3 entry point requires the existing `pain_point_radar_engine.py` beside it. It does not implement proxy failover, HN/RSS/V2EX, Gemini, or Markdown summaries. Retries do not bypass access restrictions or guarantee live availability.
+
+V3 已接通评分与导出，支持有限重试和退避；遇到拒绝访问会停止。验证使用模拟响应，不代表 Reddit 实时接口或代理已验证可用。
+
+```bash
+python3 -m py_compile pain_point_radar_v3_anti_block.py
+python3 -m unittest discover -s tests -v
+```
 
 ## 🏆 3. Opportunity Showcase / 方案中的机会示例
 
@@ -78,7 +94,7 @@ The bundled mock run uses synthetic records starting at **PR-011**; those record
 
 ## 🤖 4. Cloud Autopilot / GitHub Actions 自动巡航
 
-See [autopilot.yml](.github/workflows/autopilot.yml). It is configured for:
+See [autopilot.yml](.github/workflows/autopilot.yml). The existing workflow still invokes the V2 `pain_point_radar_engine.py`; V3 is ready for local CLI use and has not been wired into Actions. It is configured for:
 
 1. A daily run at **00:00 UTC / 北京时间 08:00**, pushes to main, and manual dispatch.
 2. Live Reddit scanning, CSV export, and terminal draft generation; manual mock mode is also available.
