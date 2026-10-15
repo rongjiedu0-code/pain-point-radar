@@ -10,7 +10,7 @@ on:
       run_mode:
         description: 'Live collection or synthetic offline demonstration'
         type: choice
-        options: [live, mock]
+        options: [live, mock, reddit-check]
         default: live
   push:
     branches: [main]
@@ -41,7 +41,7 @@ jobs:
       - name: Validate V3 syntax and regression tests
         run: |
           git rev-parse HEAD
-          python3 -m py_compile pain_point_radar_v3_anti_block.py
+          python3 -m py_compile pain_point_radar_v3_anti_block.py radar_quality.py reddit_oauth.py
           python3 -m unittest discover -s tests -v
 
       - name: Run V3 collection or explicit mock demonstration
@@ -50,12 +50,19 @@ jobs:
           RADAR_SUBREDDITS: ${{ inputs.subreddits || 'SaaS,smallbusiness,SideProject' }}
           RADAR_MODE: ${{ inputs.run_mode || 'live' }}
           PYTHONIOENCODING: utf-8
+          REDDIT_API_APPROVED: ${{ vars.REDDIT_API_APPROVED }}
+          REDDIT_USER_AGENT: ${{ vars.REDDIT_USER_AGENT }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_REFRESH_TOKEN: ${{ secrets.REDDIT_REFRESH_TOKEN }}
         shell: bash
         run: |
           printf '### Pain Point Radar V3 (%s)\n' "$RADAR_MODE" >> "$GITHUB_STEP_SUMMARY"
           set +e
           if [ "$RADAR_MODE" = mock ]; then
             python3 pain_point_radar_v3_anti_block.py --mock-self-test 2>&1 | tee radar_run.log
+          elif [ "$RADAR_MODE" = reddit-check ]; then
+            python3 pain_point_radar_v3_anti_block.py --check-reddit --subreddits "$RADAR_SUBREDDITS" 2>&1 | tee radar_run.log
           else
             python3 pain_point_radar_v3_anti_block.py --subreddits "$RADAR_SUBREDDITS" --limit 20 --retries 3 --output-csv radar_latest_scan.csv --generate-tweet 2>&1 | tee radar_run.log
           fi

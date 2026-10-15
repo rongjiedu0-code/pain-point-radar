@@ -26,7 +26,7 @@ class FallbackTests(unittest.TestCase):
             patch.object(radar, "_fetch_bytes", return_value=xml),
             patch.object(radar, "fetch_pullpush") as archive,
         ):
-            signals, success = radar.collect_reddit_signals("SaaS")
+            signals, success = radar.collect_public_reddit_signals("SaaS")
         self.assertTrue(success)
         archive.assert_not_called()
         self.assertEqual(len(signals), 1)
@@ -51,7 +51,7 @@ class FallbackTests(unittest.TestCase):
             patch.object(radar, "_fetch_bytes", return_value=b"<html>blocked</html>"),
             patch.object(radar, "_fetch_json", return_value=payload),
         ):
-            signals, success = radar.collect_reddit_signals("SaaS")
+            signals, success = radar.collect_public_reddit_signals("SaaS")
         self.assertTrue(success)
         self.assertEqual(signals[0].source_channel, "pullpush_archive:r/SaaS")
         self.assertIn("1970", signals[0].created_utc)

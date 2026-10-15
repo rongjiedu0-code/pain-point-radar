@@ -8,7 +8,7 @@
 > **Stop guessing what to build. Start quantifying real user frustration.**
 > **别再凭空猜需求，用真实用户的痛点为产品方向排序。**
 
-Pain Point Radar scans Reddit communities (**r/SaaS**, **r/smallbusiness**, and **r/SideProject**), filters high-intent complaints, and ranks opportunities with the **Pain-to-Revenue Index**. The V3.1 CLI tries public Reddit JSON, Reddit Atom feeds, and the PullPush archive, with a global HN Algolia fallback. It reuses V2 deterministic scoring and CSV export, uses bounded backoff, and records each result's source and publication/retrieval timestamps. Everything uses Python's standard library.
+Pain Point Radar reads Reddit communities (**r/SaaS**, **r/smallbusiness**, and **r/SideProject**) through approved OAuth access, filters explicit workflow complaints, and ranks candidates for manual review. Without approval or credentials, Reddit is marked unavailable and only the separate HN fallback is attempted. Everything uses Python's standard library.
 
 ### Freshness and review update
 
@@ -26,7 +26,9 @@ python pain_point_radar_v3_anti_block.py --hn-query '"tired of manually"' --hn-q
 
 Keep the seen ledger between runs. An existing CSV bootstraps it; do not delete the ledger unless intentionally resetting deduplication. CSV, ledger and diagnostics paths must be distinct and their parent directories must exist.
 
-深雷达支持 Reddit JSON、Atom RSS、PullPush 归档与 HN Algolia 回退，用意图关键词筛选痛点，再以四维启发式规则评分并输出 CSV 和发帖草稿。每条结果保留真实来源与原帖/抓取时间；评分仍需访谈和付费意愿验证。
+深雷达通过官方 OAuth 读取获准访问的 Reddit 社区，并支持独立 HN 回退；缺批准或凭据时不会尝试匿名 Reddit/RSS/归档绕行。旧解析函数仅保留测试。每条结果保留来源与时间，评分需人工验证。
+
+**Reddit status:** OAuth protocol tests pass, but real access is **not yet verified** because the owner has no known approval or app credentials. See [中文接入步骤与申请草稿](docs/reddit_setup_zh.md). `--check-reddit` checks Reddit alone; `--require-reddit` makes live scans fail when requested Reddit coverage is incomplete.
 
 ## 🧮 1. The 4D Pain-to-Revenue Scoring Formula / 四维评分
 
@@ -54,7 +56,7 @@ The table is an interpretation guide. Current code assigns preset dimension valu
 
 ## ⚡ 2. Quick Start / 零依赖启动
 
-Use Python 3.11+; no pip packages or API key are required.
+Use Python 3.11+; no pip packages are required. HN needs no API credentials; Reddit requires approved OAuth configuration.
 
 ```bash
 git clone https://github.com/rongjiedu0-code/pain-point-radar.git
@@ -83,7 +85,7 @@ Reddit may reject requests or return no matching signals. Check fetch errors and
 - `--retries 3` sets a bounded attempt count (1–5); transient HTTP 429/5xx and network failures use exponential backoff with jitter.
 - Numeric `Retry-After` is respected; waits above 60 seconds stop the source instead of retrying early. HTTP 403 and other non-retryable responses stop immediately.
 - Exit status: **0** successful collection, including valid empty feeds or successful HN fallback; **1** all sources failed; **2** partial source failure with no successful HN fallback, or invalid CLI input. HN fallback success is explicitly marked as degraded subreddit coverage. If all sources fail, the existing CSV is preserved.
-- The V3 entry point requires `pain_point_radar_engine.py` and `radar_quality.py` beside it. When Reddit JSON fails, it tries `old.reddit.com` Atom RSS, then the PullPush submission archive. If subreddit sources fail or yield no fresh unseen signals, HN Algolia is queried globally with three bounded intent phrases. Repeat `--hn-query` up to five times to override these queries; `--limit` applies per query, not to the final combined output.
+- The V3 entry point requires `pain_point_radar_engine.py`, `radar_quality.py` and `reddit_oauth.py` beside it. Reddit uses app-only OAuth tokens or an optional refresh token; credentials stay in environment variables. It caches tokens per run, refreshes once on 401, and stops on 403/429. If Reddit is unavailable or yields no fresh unseen signals, HN Algolia is queried globally with three bounded intent phrases. Repeat `--hn-query` up to five times to override these queries; `--limit` applies per query, not to combined output.
 - HN uses `tags=(story,comment)` (OR), per the [Algolia API documentation](https://hn.algolia.com/api). HN is a separate community, not replacement coverage of a requested subreddit. PullPush is a third-party archive and may return older posts or be unavailable/rate-limited.
 - CSV adds `Source_Channel`, `Source_Post_ID`, `Source_Created_UTC`, `Retrieved_At_UTC`, `Ingestion_Endpoint`, `Scoring_Method`, `Review_Status` and `Review_Reason`. `Source_URL` points to the original Reddit/HN discussion. Archives retain their original publication dates and are labeled `pullpush_archive`; old, missing-date and implausibly future-dated results are filtered out.
 - Logs report actual HTTP responses and the selected source. There is no proxy rotation, rate-limit bypass, guaranteed HTTP 200, Gemini analysis, V2EX integration, or Markdown summary generation.

@@ -2,8 +2,9 @@
 """Pain Point Radar V3.1: resilient public-source collection and provenance.
 
 Author: rongjiedu0-code. License: Apache-2.0 (see LICENSE).
-Reddit JSON -> Reddit Atom -> PullPush archive -> global HN Algolia fallback.
-Rate limits are respected; alternate sources do not guarantee Reddit coverage.
+Approved Reddit OAuth -> global HN Algolia fallback.
+Legacy feed parsers remain for tests, not missing-credential workarounds.
+HN fallback does not guarantee Reddit coverage.
 """
 
 from __future__ import annotations
@@ -27,12 +28,15 @@ from pathlib import Path
 
 import pain_point_radar_engine as engine
 import radar_quality as quality
+from reddit_oauth import RedditClient
 
 USER_AGENT = "PainPointRadar/3.1 (+https://github.com/rongjiedu0-code/pain-point-radar)"
 RETRYABLE = {429, 500, 502, 503, 504}
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 ATOM = {"a": "http://www.w3.org/2005/Atom"}
 FETCH_EVENTS = []
+REDDIT_STATUS = {}
+REDDIT_CLIENT = None
 
 
 @dataclass
@@ -272,7 +276,8 @@ def fetch_pullpush(subreddit, retries=3, limit=25):
     return signals, True
 
 
-def collect_reddit_signals(subreddit, retries=3, limit=25):
+def collect_public_reddit_signals(subreddit, retries=3, limit=25):
+    """Legacy feed parser helper; not used by live CLI collection."""
     payload = fetch_sub_reddit_json(subreddit, retries, limit)
     if payload:
         signals = signals_from_payload(payload, subreddit)
@@ -282,6 +287,28 @@ def collect_reddit_signals(subreddit, retries=3, limit=25):
     if success:
         return signals, True
     return fetch_pullpush(subreddit, retries, limit)
+
+
+def collect_reddit_signals(subreddit, retries=3, limit=25):
+    global REDDIT_CLIENT
+    if REDDIT_CLIENT is None:
+        REDDIT_CLIENT = RedditClient()
+    start = len(REDDIT_CLIENT.events)
+    payload, status = REDDIT_CLIENT.listing(subreddit, limit, retries)
+    FETCH_EVENTS.extend(REDDIT_CLIENT.events[start:])
+    REDDIT_STATUS[subreddit] = status
+    if status != "ok":
+        print(f"[Reddit] r/{subreddit}: {status}", file=sys.stderr)
+        return [], False
+    signals = signals_from_payload(payload, subreddit)
+    endpoint = f"https://oauth.reddit.com/r/{subreddit}/new"
+    for signal in signals:
+        signal.source_channel = f"reddit_oauth:r/{subreddit}"
+        signal.ingestion_endpoint = endpoint
+    print(
+        f"[Reddit OAuth] r/{subreddit}: {len(payload['data']['children'])} posts; {len(signals)} signals"
+    )
+    return signals, True
 
 
 def fetch_hn_algolia(
@@ -378,6 +405,7 @@ def export_with_provenance(opportunities, signals, output):
 
 
 def main(argv=None):
+    global REDDIT_CLIENT
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subreddits", default="SaaS,smallbusiness,SideProject")
     parser.add_argument(
@@ -391,6 +419,16 @@ def main(argv=None):
     parser.add_argument("--max-age-days", type=int, default=30)
     parser.add_argument("--seen-state", default="radar_seen.json")
     parser.add_argument("--diagnostics-json", default="radar_diagnostics.json")
+    parser.add_argument(
+        "--check-reddit",
+        action="store_true",
+        help="Check Reddit only; never write CSV or seen-state",
+    )
+    parser.add_argument(
+        "--require-reddit",
+        action="store_true",
+        help="Fail if any requested subreddit is unavailable, even if HN works",
+    )
     parser.add_argument("--mock-self-test", action="store_true")
     parser.add_argument("--generate-tweet", action="store_true")
     args = parser.parse_args(argv)
@@ -416,6 +454,8 @@ def main(argv=None):
     except (OSError, ValueError) as exc:
         parser.error(f"Cannot load deduplication state: {exc}")
     FETCH_EVENTS.clear()
+    REDDIT_STATUS.clear()
+    REDDIT_CLIENT = RedditClient()
     started = utc_now()
     source_status = {}
 
@@ -443,7 +483,24 @@ def main(argv=None):
         collected, success = collect_reddit_signals(sub, args.retries, args.limit)
         signals.extend(collected)
         failures += not success
-        source_status[f"r/{sub}"] = {"success": success, "matched": len(collected)}
+        source_status[f"r/{sub}"] = {
+            "success": success,
+            "matched": len(collected),
+            "status": REDDIT_STATUS.get(sub, "custom_collector"),
+        }
+    if args.check_reddit:
+        status = 2 if failures else 0
+        report(
+            status,
+            coverage="unavailable"
+            if failures == len(subs)
+            else ("degraded" if failures else "requested_sources_available"),
+            check_only=True,
+            csv_preserved=True,
+            matched=len(signals),
+            reddit_configuration=REDDIT_CLIENT.configuration_status(),
+        )
+        return status
     hn_success = False
     if failures or not quality.select_fresh(signals, seen, args.max_age_days)[0]:
         for query in dict.fromkeys(queries):
@@ -477,7 +534,7 @@ def main(argv=None):
     print(
         f"[Radar V3.1] Exported {len(opportunities)} opportunities; {failures} subreddit sources unavailable; HN fallback={hn_success}"
     )
-    status = 2 if failures and not hn_success else 0
+    status = 2 if failures and (args.require_reddit or not hn_success) else 0
     report(
         status,
         coverage="degraded" if failures else "requested_sources_available",
