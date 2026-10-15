@@ -1,20 +1,23 @@
 {
-  "started_at_utc": "2026-10-15T06:52:35.198995+00:00",
-  "completed_at_utc": "2026-10-15T06:53:25.751056+00:00",
+  "started_at_utc": "2026-10-15T07:07:18.519457+00:00",
+  "completed_at_utc": "2026-10-15T07:07:20.443525+00:00",
   "exit_code": 0,
   "max_age_days": 30,
   "source_status": {
     "r/SaaS": {
       "success": false,
-      "matched": 0
+      "matched": 0,
+      "status": "approval_required"
     },
     "r/smallbusiness": {
       "success": false,
-      "matched": 0
+      "matched": 0,
+      "status": "approval_required"
     },
     "r/SideProject": {
       "success": false,
-      "matched": 0
+      "matched": 0,
+      "status": "approval_required"
     },
     "hn_algolia:\"wish there was a tool\"": {
       "success": true,
@@ -31,112 +34,25 @@
   },
   "fetch_events": [
     {
-      "url": "https://www.reddit.com/r/SaaS/new.json?limit=20",
-      "http_status": 403,
-      "error": "http_error"
-    },
-    {
-      "url": "https://old.reddit.com/r/SaaS/new/.rss",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22wish+there+was+a+tool%22&tags=%28story%2Ccomment%29&hitsPerPage=20&numericFilters=created_at_i%3E1789456038",
       "http_status": 200,
-      "bytes": 332033
+      "bytes": 3259
     },
     {
-      "url": "https://old.reddit.com/r/SaaS/new/.rss",
-      "error": "invalid_atom_xml"
-    },
-    {
-      "url": "https://api.pullpush.io/reddit/search/submission/?subreddit=SaaS&size=20&sort=desc",
-      "http_status": 429,
-      "error": "http_error"
-    },
-    {
-      "url": "https://api.pullpush.io/reddit/search/submission/?subreddit=SaaS&size=20&sort=desc",
-      "http_status": 429,
-      "error": "http_error"
-    },
-    {
-      "url": "https://api.pullpush.io/reddit/search/submission/?subreddit=SaaS&size=20&sort=desc",
-      "http_status": 429,
-      "error": "http_error"
-    },
-    {
-      "url": "https://www.reddit.com/r/smallbusiness/new.json?limit=20",
-      "http_status": 403,
-      "error": "http_error"
-    },
-    {
-      "url": "https://old.reddit.com/r/smallbusiness/new/.rss",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22tired+of+manually%22&tags=%28story%2Ccomment%29&hitsPerPage=20&numericFilters=created_at_i%3E1789456038",
       "http_status": 200,
-      "bytes": 332194
+      "bytes": 4653
     },
     {
-      "url": "https://old.reddit.com/r/smallbusiness/new/.rss",
-      "error": "invalid_atom_xml"
-    },
-    {
-      "url": "https://api.pullpush.io/reddit/search/submission/?subreddit=smallbusiness&size=20&sort=desc",
-      "http_status": 429,
-      "error": "http_error"
-    },
-    {
-      "url": "https://api.pullpush.io/reddit/search/submission/?subreddit=smallbusiness&size=20&sort=desc",
-      "http_status": 429,
-      "error": "http_error"
-    },
-    {
-      "url": "https://api.pullpush.io/reddit/search/submission/?subreddit=smallbusiness&size=20&sort=desc",
-      "http_status": 429,
-      "error": "http_error"
-    },
-    {
-      "url": "https://www.reddit.com/r/SideProject/new.json?limit=20",
-      "http_status": 403,
-      "error": "http_error"
-    },
-    {
-      "url": "https://old.reddit.com/r/SideProject/new/.rss",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22looking+for+a+tool%22&tags=%28story%2Ccomment%29&hitsPerPage=20&numericFilters=created_at_i%3E1789456039",
       "http_status": 200,
-      "bytes": 332232
-    },
-    {
-      "url": "https://old.reddit.com/r/SideProject/new/.rss",
-      "error": "invalid_atom_xml"
-    },
-    {
-      "url": "https://api.pullpush.io/reddit/search/submission/?subreddit=SideProject&size=20&sort=desc",
-      "http_status": 429,
-      "error": "http_error"
-    },
-    {
-      "url": "https://api.pullpush.io/reddit/search/submission/?subreddit=SideProject&size=20&sort=desc",
-      "http_status": 429,
-      "error": "http_error"
-    },
-    {
-      "url": "https://api.pullpush.io/reddit/search/submission/?subreddit=SideProject&size=20&sort=desc",
-      "http_status": 429,
-      "error": "http_error"
-    },
-    {
-      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22wish+there+was+a+tool%22&tags=%28story%2Ccomment%29&hitsPerPage=20&numericFilters=created_at_i%3E1789455204",
-      "http_status": 200,
-      "bytes": 3261
-    },
-    {
-      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22tired+of+manually%22&tags=%28story%2Ccomment%29&hitsPerPage=20&numericFilters=created_at_i%3E1789455205",
-      "http_status": 200,
-      "bytes": 4644
-    },
-    {
-      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22looking+for+a+tool%22&tags=%28story%2Ccomment%29&hitsPerPage=20&numericFilters=created_at_i%3E1789455205",
-      "http_status": 200,
-      "bytes": 9642
+      "bytes": 9654
     }
   ],
   "coverage": "degraded",
-  "exported": 5,
+  "exported": 0,
   "filtered": {
-    "duplicate": 2,
+    "duplicate": 7,
     "stale": 0,
     "invalid_date": 0,
     "future": 0
