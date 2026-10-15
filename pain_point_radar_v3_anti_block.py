@@ -277,7 +277,7 @@ def fetch_reddit_rss(subreddit, retries=3, limit=25):
     return signals, True
 
 
-def fetch_arctic_shift(subreddit, retries=3, limit=25):
+def fetch_arctic_shift(subreddit, retries=3, limit=25, query_text=None):
     _validate_args(subreddit, retries, limit)
     query = urllib.parse.urlencode(
         {
@@ -287,10 +287,21 @@ def fetch_arctic_shift(subreddit, retries=3, limit=25):
             "after": int(time.time() - MAX_AGE_DAYS * 86400),
         }
     )
+    if query_text:
+        query += "&" + urllib.parse.urlencode({"query": query_text})
     endpoint = "https://arctic-shift.photon-reddit.com/api/posts/search?" + query
     payload = _fetch_json(endpoint, retries)
     if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
         return [], False
+    FETCH_EVENTS.append(
+        {
+            "url": endpoint,
+            "records": len(payload["data"]),
+            "sample_publication_dates": [
+                x.get("created_utc") for x in payload["data"][:3] if isinstance(x, dict)
+            ],
+        }
+    )
     signals = []
     for data in payload["data"]:
         if (
@@ -314,7 +325,15 @@ def collect_public_reddit_signals(subreddit, retries=3, limit=25):
     signals, success = fetch_reddit_rss(subreddit, retries, limit)
     if success:
         return signals, True
-    return fetch_arctic_shift(subreddit, retries, limit)
+    signals, success = fetch_arctic_shift(subreddit, retries, limit)
+    if success and not signals:
+        # Bounded server-side intent searches, rather than broadening the classifier.
+        for query_text in ("manually", "looking for a tool"):
+            found, available = fetch_arctic_shift(subreddit, retries, limit, query_text)
+            signals.extend(found)
+            if not available:
+                break
+    return signals, success
 
 
 def collect_reddit_signals(subreddit, retries=3, limit=25):
@@ -540,7 +559,9 @@ def main(argv=None):
             check_only=True,
             csv_preserved=True,
             matched=len(signals),
-                reddit_configuration=REDDIT_CLIENT.configuration_status() if REDDIT_TRANSPORT == 'oauth' else 'public_rss_arctic_shift',
+            reddit_configuration=REDDIT_CLIENT.configuration_status()
+            if REDDIT_TRANSPORT == "oauth"
+            else "public_rss_arctic_shift",
         )
         return status
     hn_success = False

@@ -1,5 +1,7 @@
 # Reddit 接入：当前缺项与配置
 
+> 更新：默认已改用无需密钥的 Atom RSS → Arctic Shift 归档。本文以下内容只适用于显式选择 `--reddit-transport oauth` 的可选接入。无需为默认公开来源申请 OAuth。最新实采状态请看 Actions `sources-check` 的 CSV/JSON 证据，不能把解析测试通过当成来源恢复。
+
 截至2026-10-15：代码已补充官方 OAuth 适配器和独立验收模式；没有 API 访问批准与凭据，尚不能证明真实 Reddit 采集恢复。HN 成功不作为 Reddit 验收通过。
 
 ## 你现在需要准备什么
