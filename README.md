@@ -86,8 +86,8 @@ Reddit may reject requests or return no matching signals. Check fetch errors and
 - Numeric `Retry-After` is respected; waits above 60 seconds stop the source instead of retrying early. HTTP 403 and other non-retryable responses stop immediately.
 - Exit status: **0** successful collection, including valid empty feeds or successful HN fallback; **1** all sources failed; **2** partial source failure with no successful HN fallback, or invalid CLI input. HN fallback success is explicitly marked as degraded subreddit coverage. If all sources fail, the existing CSV is preserved.
 - The V3 entry point requires `pain_point_radar_engine.py`, `radar_quality.py` and `reddit_oauth.py` beside it. Default `--reddit-transport public` uses Atom then Arctic Shift. `--reddit-transport oauth` retains the optional token-based path. HN runs when Reddit is unavailable, no fresh unseen signals exist, or `--always-hn` is set. Repeat `--hn-query` up to five times to override the three default intent queries; `--limit` applies per query, not to combined output.
-- HN uses `tags=(story,comment)` (OR), per the [Algolia API documentation](https://hn.algolia.com/api). HN is a separate community, not replacement coverage of a requested subreddit. PullPush is a third-party archive and may return older posts or be unavailable/rate-limited.
-- CSV adds `Source_Channel`, `Source_Post_ID`, `Source_Created_UTC`, `Retrieved_At_UTC`, `Ingestion_Endpoint`, `Scoring_Method`, `Review_Status` and `Review_Reason`. `Source_URL` points to the original Reddit/HN discussion. Archives retain their original publication dates and are labeled `pullpush_archive`; old, missing-date and implausibly future-dated results are filtered out.
+- HN uses `tags=(story,comment)` (OR), per the [Algolia API documentation](https://hn.algolia.com/api). HN is a separate community, not replacement coverage of a requested subreddit. Arctic Shift is a third-party archive, not the official live API; bounded pagination examines at most four pages per requested community when intent matches are sparse.
+- CSV adds `Source_Channel`, `Source_Post_ID`, `Source_Created_UTC`, `Retrieved_At_UTC`, `Ingestion_Endpoint`, `Scoring_Method`, `Review_Status` and `Review_Reason`. `Source_URL` points to the original Reddit/HN discussion. Archives retain their original publication dates and are labeled `arctic_shift_archive`; old, missing-date and implausibly future-dated results are filtered out.
 - Logs report actual HTTP responses and the selected source. There is no proxy rotation, rate-limit bypass, guaranteed HTTP 200, Gemini analysis, V2EX integration, or Markdown summary generation.
 
 V3.1 已接通多源回退、评分、溯源和导出。遇到单源拒绝会停止请求该源并尝试其他公开来源，不伪装模拟数据；是否可用以每次运行日志为准，归档数据不等于刚发布的数据。
@@ -127,7 +127,7 @@ Actions 已切换到 V3。实时失败会明确显示，不再用模拟结果替
 
 ## 🛠️ 5. Roadmap / 后续规划
 
-- V2EX ingestion and more configurable source coverage (Reddit Atom, PullPush and HN Algolia are implemented).
+- V2EX ingestion and more configurable source coverage (Reddit Atom, Arctic Shift and HN Algolia are implemented).
 - Gemini / local Ollama analysis and Markdown summary output.
 - Evidence-backed scoring with traceable sources and human validation.
 

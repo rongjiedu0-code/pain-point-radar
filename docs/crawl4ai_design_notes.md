@@ -10,6 +10,8 @@ Reviewed 2026-10-15: official unclecode/crawl4ai source and docs. This change us
 - [HN API](https://hn.algolia.com/api): apply numericFilters to publication timestamps, and use three bounded intent queries to improve discovery. A second local timestamp check also filters Reddit/archive results and invalid/future dates.
 
 ## Why no browser fallback yet
+
+Current public transport: Atom → Arctic Shift archive (up to four pages per subreddit), with optional OAuth. This supersedes the earlier OAuth-only experiment. Cloud `sources-check` must independently demonstrate recent Reddit-origin and HN exports before merge; it does not claim RSS is usable when the upstream returns HTML.
 The observed failure is blocked/malformed public feeds, not a demonstrated JavaScript rendering requirement. Installing Crawl4AI cannot promise authenticated Reddit coverage. An optional browser adapter can be evaluated when a permitted target actually needs rendering; existing HTTP/Atom/archive/HN sources remain explicit and independently diagnosed.
 
 ## State and output contract
