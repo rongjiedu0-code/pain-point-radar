@@ -24,7 +24,7 @@ class FallbackTests(unittest.TestCase):
         with (
             patch.object(radar, "fetch_sub_reddit_json", return_value={}),
             patch.object(radar, "_fetch_bytes", return_value=xml),
-            patch.object(radar, "fetch_pullpush") as archive,
+            patch.object(radar, "fetch_arctic_shift") as archive,
         ):
             signals, success = radar.collect_public_reddit_signals("SaaS")
         self.assertTrue(success)
@@ -34,7 +34,7 @@ class FallbackTests(unittest.TestCase):
         self.assertEqual(signals[0].created_utc, "2026-01-01T00:00:00Z")
         self.assertNotIn("<p>", signals[0].body)
 
-    def test_malformed_rss_advances_to_pullpush_archive(self):
+    def test_malformed_rss_advances_to_arctic_shift_archive(self):
         payload = {
             "data": [
                 {
@@ -53,9 +53,9 @@ class FallbackTests(unittest.TestCase):
         ):
             signals, success = radar.collect_public_reddit_signals("SaaS")
         self.assertTrue(success)
-        self.assertEqual(signals[0].source_channel, "pullpush_archive:r/SaaS")
+        self.assertEqual(signals[0].source_channel, "arctic_shift_archive:r/SaaS")
         self.assertIn("1970", signals[0].created_utc)
-        self.assertIn("api.pullpush.io", signals[0].ingestion_endpoint)
+        self.assertIn("arctic-shift.photon-reddit.com", signals[0].ingestion_endpoint)
 
     def test_hn_tags_are_or_and_comments_have_canonical_source(self):
         payload = {
@@ -129,7 +129,7 @@ class FallbackTests(unittest.TestCase):
         with patch.object(radar, "_fetch_json", return_value={"error": "unavailable"}):
             self.assertEqual(radar.fetch_hn_algolia(), ([], False))
         with patch.object(radar, "_fetch_json", return_value={"data": "bad"}):
-            self.assertEqual(radar.fetch_pullpush("SaaS"), ([], False))
+            self.assertEqual(radar.fetch_arctic_shift("SaaS"), ([], False))
 
     def test_archive_deleted_content_and_wrong_subreddit_are_ignored(self):
         with patch.object(
@@ -151,7 +151,7 @@ class FallbackTests(unittest.TestCase):
                 ]
             },
         ):
-            self.assertEqual(radar.fetch_pullpush("SaaS"), ([], True))
+            self.assertEqual(radar.fetch_arctic_shift("SaaS"), ([], True))
 
 
 if __name__ == "__main__":

@@ -2,9 +2,8 @@
 """Pain Point Radar V3.1: resilient public-source collection and provenance.
 
 Author: rongjiedu0-code. License: Apache-2.0 (see LICENSE).
-Approved Reddit OAuth -> global HN Algolia fallback.
-Legacy feed parsers remain for tests, not missing-credential workarounds.
-HN fallback does not guarantee Reddit coverage.
+Public Reddit Atom -> Arctic Shift archive, plus HN Algolia.
+OAuth remains optional. Each source is independently diagnosed and labeled.
 """
 
 from __future__ import annotations
@@ -37,6 +36,8 @@ ATOM = {"a": "http://www.w3.org/2005/Atom"}
 FETCH_EVENTS = []
 REDDIT_STATUS = {}
 REDDIT_CLIENT = None
+REDDIT_TRANSPORT = "public"
+MAX_AGE_DAYS = 30
 
 
 @dataclass
@@ -226,9 +227,33 @@ def fetch_reddit_rss(subreddit, retries=3, limit=25):
     entries = root.findall("a:entry", ATOM)[:limit]
     for entry in entries:
         title = entry.findtext("a:title", "", ATOM)
-        body = plain_text(entry.findtext("a:content", "", ATOM))
+        content = entry.find("a:content", ATOM)
+        body = plain_text("".join(content.itertext()) if content is not None else "")
         matched = engine.scan_text_for_intent(title + "\n" + body)
         post_id = entry.findtext("a:id", "", ATOM).removeprefix("t3_")
+        links = entry.findall("a:link", ATOM)
+        href = next(
+            (
+                link.get("href", "")
+                for link in links
+                if link.get("rel", "alternate") == "alternate"
+            ),
+            "",
+        )
+        parsed = urllib.parse.urlsplit(href)
+        link_match = re.fullmatch(
+            r"/r/([A-Za-z0-9_]+)/comments/([A-Za-z0-9]+)(?:/.*)?", parsed.path
+        )
+        if link_match and parsed.hostname in {
+            "www.reddit.com",
+            "old.reddit.com",
+            "reddit.com",
+        }:
+            if link_match.group(1).lower() != subreddit.lower():
+                continue
+            post_id = link_match.group(2)
+        elif href:
+            continue
         if not matched or not re.fullmatch(r"[A-Za-z0-9]+", post_id):
             continue
         signals.append(
@@ -239,7 +264,8 @@ def fetch_reddit_rss(subreddit, retries=3, limit=25):
                 body=body[:1000],
                 author=entry.findtext("a:author/a:name", "", ATOM),
                 url=f"https://www.reddit.com/r/{subreddit}/comments/{post_id}/",
-                created_utc=entry.findtext("a:published", "", ATOM),
+                created_utc=entry.findtext("a:published", "", ATOM)
+                or entry.findtext("a:updated", "", ATOM),
                 matched_keyword=matched,
                 ingestion_endpoint=endpoint,
                 retrieved_at_utc=utc_now(),
@@ -251,12 +277,17 @@ def fetch_reddit_rss(subreddit, retries=3, limit=25):
     return signals, True
 
 
-def fetch_pullpush(subreddit, retries=3, limit=25):
+def fetch_arctic_shift(subreddit, retries=3, limit=25):
     _validate_args(subreddit, retries, limit)
     query = urllib.parse.urlencode(
-        {"subreddit": subreddit, "size": limit, "sort": "desc"}
+        {
+            "subreddit": subreddit,
+            "limit": limit,
+            "sort": "desc",
+            "after": int(time.time() - MAX_AGE_DAYS * 86400),
+        }
     )
-    endpoint = "https://api.pullpush.io/reddit/search/submission/?" + query
+    endpoint = "https://arctic-shift.photon-reddit.com/api/posts/search?" + query
     payload = _fetch_json(endpoint, retries)
     if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
         return [], False
@@ -267,32 +298,35 @@ def fetch_pullpush(subreddit, retries=3, limit=25):
             or str(data.get("subreddit", subreddit)).lower() != subreddit.lower()
         ):
             continue
-        signal = _reddit_signal(data, subreddit, "pullpush_archive", endpoint)
+        data = dict(data)
+        data["id"] = str(data.get("id", "")).removeprefix("t3_")
+        signal = _reddit_signal(data, subreddit, "arctic_shift_archive", endpoint)
         if signal:
             signals.append(signal)
     print(
-        f"[Source] PullPush archive r/{subreddit}: {len(payload['data'])} records; {len(signals)} signals"
+        f"[Source] Arctic Shift archive r/{subreddit}: {len(payload['data'])} records; {len(signals)} signals"
     )
     return signals, True
 
 
 def collect_public_reddit_signals(subreddit, retries=3, limit=25):
-    """Legacy feed parser helper; not used by live CLI collection."""
-    payload = fetch_sub_reddit_json(subreddit, retries, limit)
-    if payload:
-        signals = signals_from_payload(payload, subreddit)
-        print(f"[Source] Reddit JSON r/{subreddit}: {len(signals)} signals")
-        return signals, True
+    """Public Atom feed with a separately labeled third-party archive fallback."""
     signals, success = fetch_reddit_rss(subreddit, retries, limit)
     if success:
         return signals, True
-    return fetch_pullpush(subreddit, retries, limit)
+    return fetch_arctic_shift(subreddit, retries, limit)
 
 
 def collect_reddit_signals(subreddit, retries=3, limit=25):
     global REDDIT_CLIENT
     if REDDIT_CLIENT is None:
         REDDIT_CLIENT = RedditClient()
+    if REDDIT_TRANSPORT == "public":
+        signals, success = collect_public_reddit_signals(subreddit, retries, limit)
+        REDDIT_STATUS[subreddit] = (
+            "public_source_available" if success else "public_sources_unavailable"
+        )
+        return signals, success
     start = len(REDDIT_CLIENT.events)
     payload, status = REDDIT_CLIENT.listing(subreddit, limit, retries)
     FETCH_EVENTS.extend(REDDIT_CLIENT.events[start:])
@@ -405,7 +439,7 @@ def export_with_provenance(opportunities, signals, output):
 
 
 def main(argv=None):
-    global REDDIT_CLIENT
+    global REDDIT_CLIENT, REDDIT_TRANSPORT, MAX_AGE_DAYS
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subreddits", default="SaaS,smallbusiness,SideProject")
     parser.add_argument(
@@ -417,6 +451,12 @@ def main(argv=None):
         "--hn-query", action="append", help="Repeat for up to 5 HN queries"
     )
     parser.add_argument("--max-age-days", type=int, default=30)
+    parser.add_argument(
+        "--reddit-transport", choices=["public", "oauth"], default="public"
+    )
+    parser.add_argument(
+        "--always-hn", action="store_true", help="Collect HN even when Reddit succeeds"
+    )
     parser.add_argument("--seen-state", default="radar_seen.json")
     parser.add_argument("--diagnostics-json", default="radar_diagnostics.json")
     parser.add_argument(
@@ -456,6 +496,8 @@ def main(argv=None):
     FETCH_EVENTS.clear()
     REDDIT_STATUS.clear()
     REDDIT_CLIENT = RedditClient()
+    REDDIT_TRANSPORT = args.reddit_transport
+    MAX_AGE_DAYS = args.max_age_days
     started = utc_now()
     source_status = {}
 
@@ -498,11 +540,15 @@ def main(argv=None):
             check_only=True,
             csv_preserved=True,
             matched=len(signals),
-            reddit_configuration=REDDIT_CLIENT.configuration_status(),
+                reddit_configuration=REDDIT_CLIENT.configuration_status() if REDDIT_TRANSPORT == 'oauth' else 'public_rss_arctic_shift',
         )
         return status
     hn_success = False
-    if failures or not quality.select_fresh(signals, seen, args.max_age_days)[0]:
+    if (
+        args.always_hn
+        or failures
+        or not quality.select_fresh(signals, seen, args.max_age_days)[0]
+    ):
         for query in dict.fromkeys(queries):
             hn_signals, success = fetch_hn_algolia(
                 args.retries, args.limit, query, args.max_age_days

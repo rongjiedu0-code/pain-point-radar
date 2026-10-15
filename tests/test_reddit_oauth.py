@@ -145,6 +145,8 @@ class RedditOAuthTests(unittest.TestCase):
                 status = radar.main(
                     [
                         "--check-reddit",
+                        "--reddit-transport",
+                        "oauth",
                         "--output-csv",
                         str(output),
                         "--seen-state",

@@ -10,7 +10,7 @@ on:
       run_mode:
         description: 'Live collection or synthetic offline demonstration'
         type: choice
-        options: [live, mock, reddit-check]
+        options: [live, mock, reddit-check, sources-check]
         default: live
   push:
     branches: [main]
@@ -63,8 +63,10 @@ jobs:
             python3 pain_point_radar_v3_anti_block.py --mock-self-test 2>&1 | tee radar_run.log
           elif [ "$RADAR_MODE" = reddit-check ]; then
             python3 pain_point_radar_v3_anti_block.py --check-reddit --subreddits "$RADAR_SUBREDDITS" 2>&1 | tee radar_run.log
+          elif [ "$RADAR_MODE" = sources-check ]; then
+            python3 verify_live_sources.py 2>&1 | tee radar_run.log
           else
-            python3 pain_point_radar_v3_anti_block.py --subreddits "$RADAR_SUBREDDITS" --limit 20 --retries 3 --output-csv radar_latest_scan.csv --generate-tweet 2>&1 | tee radar_run.log
+            python3 pain_point_radar_v3_anti_block.py --subreddits "$RADAR_SUBREDDITS" --limit 25 --retries 3 --always-hn --output-csv radar_latest_scan.csv --generate-tweet 2>&1 | tee radar_run.log
           fi
           status=${PIPESTATUS[0]}
           set -e
@@ -80,6 +82,8 @@ jobs:
           name: radar-v3-${{ github.run_id }}
           path: |
             radar_run.log
+            radar_sources_check.csv
+            radar_sources_check.json
             radar_diagnostics.json
             radar_seen.json
             radar_latest_scan.csv
