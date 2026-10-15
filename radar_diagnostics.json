@@ -1,6 +1,6 @@
 {
-  "started_at_utc": "2026-10-15T07:24:22.875808+00:00",
-  "completed_at_utc": "2026-10-15T07:24:37.179721+00:00",
+  "started_at_utc": "2026-10-15T07:25:41.819930+00:00",
+  "completed_at_utc": "2026-10-15T07:25:50.919896+00:00",
   "exit_code": 0,
   "max_age_days": 30,
   "source_status": {
@@ -36,19 +36,19 @@
     {
       "url": "https://old.reddit.com/r/SaaS/new/.rss",
       "http_status": 200,
-      "bytes": 332001
+      "bytes": 332031
     },
     {
       "url": "https://old.reddit.com/r/SaaS/new/.rss",
       "error": "invalid_atom_xml"
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SaaS&limit=25&sort=desc&after=1789457063",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SaaS&limit=25&sort=desc&after=1789457141",
       "http_status": 200,
       "bytes": 99218
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SaaS&limit=25&sort=desc&after=1789457063",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SaaS&limit=25&sort=desc&after=1789457141",
       "records": 25,
       "sample_publication_dates": [
         1792046806,
@@ -59,12 +59,12 @@
       "returned_records": 25
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SaaS&limit=25&sort=desc&after=1789457064&before=1792004392",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SaaS&limit=25&sort=desc&after=1789457142&before=1792004392",
       "http_status": 200,
       "bytes": 87447
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SaaS&limit=25&sort=desc&after=1789457064&before=1792004392",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SaaS&limit=25&sort=desc&after=1789457142&before=1792004392",
       "records": 25,
       "sample_publication_dates": [
         1792003926,
@@ -77,19 +77,19 @@
     {
       "url": "https://old.reddit.com/r/smallbusiness/new/.rss",
       "http_status": 200,
-      "bytes": 332158
+      "bytes": 332139
     },
     {
       "url": "https://old.reddit.com/r/smallbusiness/new/.rss",
       "error": "invalid_atom_xml"
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457066",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457143",
       "http_status": 200,
       "bytes": 90887
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457066",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457143",
       "records": 25,
       "sample_publication_dates": [
         1792047033,
@@ -100,12 +100,12 @@
       "returned_records": 25
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457068&before=1792002084",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457144&before=1792002084",
       "http_status": 200,
       "bytes": 71615
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457068&before=1792002084",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457144&before=1792002084",
       "records": 25,
       "sample_publication_dates": [
         1792001987,
@@ -116,12 +116,12 @@
       "returned_records": 25
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457068&before=1791993656",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457145&before=1791993656",
       "http_status": 200,
       "bytes": 85730
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457068&before=1791993656",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457145&before=1791993656",
       "records": 25,
       "sample_publication_dates": [
         1791993628,
@@ -132,12 +132,12 @@
       "returned_records": 25
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457069&before=1791978478",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457146&before=1791978478",
       "http_status": 200,
       "bytes": 80112
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457069&before=1791978478",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=smallbusiness&limit=25&sort=desc&after=1789457146&before=1791978478",
       "records": 25,
       "sample_publication_dates": [
         1791978335,
@@ -150,19 +150,19 @@
     {
       "url": "https://old.reddit.com/r/SideProject/new/.rss",
       "http_status": 200,
-      "bytes": 332083
+      "bytes": 332175
     },
     {
       "url": "https://old.reddit.com/r/SideProject/new/.rss",
       "error": "invalid_atom_xml"
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457071",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457147",
       "http_status": 200,
       "bytes": 100793
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457071",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457147",
       "records": 25,
       "sample_publication_dates": [
         1792047035,
@@ -173,12 +173,12 @@
       "returned_records": 25
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457073&before=1792045579",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457148&before=1792045579",
       "http_status": 200,
       "bytes": 116748
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457073&before=1792045579",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457148&before=1792045579",
       "records": 25,
       "sample_publication_dates": [
         1792045441,
@@ -189,57 +189,30 @@
       "returned_records": 25
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457074&before=1792014414",
+      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457149&before=1792014414",
+      "http_status": 422,
+      "error": "http_error"
+    },
+    {
+      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22wish+there+was+a+tool%22&tags=%28story%2Ccomment%29&hitsPerPage=25&numericFilters=created_at_i%3E1789457150",
       "http_status": 200,
-      "bytes": 113736
+      "bytes": 3249
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457074&before=1792014414",
-      "records": 25,
-      "sample_publication_dates": [
-        1792014401,
-        1792014260,
-        1792014242
-      ],
-      "oldest_created_utc": 1792012628,
-      "returned_records": 25
-    },
-    {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457075&before=1792012628",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22tired+of+manually%22&tags=%28story%2Ccomment%29&hitsPerPage=25&numericFilters=created_at_i%3E1789457150",
       "http_status": 200,
-      "bytes": 91444
+      "bytes": 4632
     },
     {
-      "url": "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SideProject&limit=25&sort=desc&after=1789457075&before=1792012628",
-      "records": 25,
-      "sample_publication_dates": [
-        1792012591,
-        1792012481,
-        1792012480
-      ],
-      "oldest_created_utc": 1792007672,
-      "returned_records": 25
-    },
-    {
-      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22wish+there+was+a+tool%22&tags=%28story%2Ccomment%29&hitsPerPage=25&numericFilters=created_at_i%3E1789457076",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22looking+for+a+tool%22&tags=%28story%2Ccomment%29&hitsPerPage=25&numericFilters=created_at_i%3E1789457150",
       "http_status": 200,
-      "bytes": 3259
-    },
-    {
-      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22tired+of+manually%22&tags=%28story%2Ccomment%29&hitsPerPage=25&numericFilters=created_at_i%3E1789457076",
-      "http_status": 200,
-      "bytes": 4656
-    },
-    {
-      "url": "https://hn.algolia.com/api/v1/search_by_date?query=%22looking+for+a+tool%22&tags=%28story%2Ccomment%29&hitsPerPage=25&numericFilters=created_at_i%3E1789457076",
-      "http_status": 200,
-      "bytes": 9627
+      "bytes": 9608
     }
   ],
   "coverage": "requested_sources_available",
-  "exported": 1,
+  "exported": 0,
   "filtered": {
-    "duplicate": 7,
+    "duplicate": 8,
     "stale": 0,
     "invalid_date": 0,
     "future": 0
