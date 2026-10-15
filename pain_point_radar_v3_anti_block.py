@@ -277,7 +277,7 @@ def fetch_reddit_rss(subreddit, retries=3, limit=25):
     return signals, True
 
 
-def fetch_arctic_shift(subreddit, retries=3, limit=25, query_text=None):
+def fetch_arctic_shift(subreddit, retries=3, limit=25, before=None):
     _validate_args(subreddit, retries, limit)
     query = urllib.parse.urlencode(
         {
@@ -287,8 +287,8 @@ def fetch_arctic_shift(subreddit, retries=3, limit=25, query_text=None):
             "after": int(time.time() - MAX_AGE_DAYS * 86400),
         }
     )
-    if query_text:
-        query += "&" + urllib.parse.urlencode({"query": query_text})
+    if before is not None:
+        query += "&" + urllib.parse.urlencode({"before": before})
     endpoint = "https://arctic-shift.photon-reddit.com/api/posts/search?" + query
     payload = _fetch_json(endpoint, retries)
     if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
@@ -300,6 +300,16 @@ def fetch_arctic_shift(subreddit, retries=3, limit=25, query_text=None):
             "sample_publication_dates": [
                 x.get("created_utc") for x in payload["data"][:3] if isinstance(x, dict)
             ],
+            "oldest_created_utc": min(
+                (
+                    x.get("created_utc")
+                    for x in payload["data"]
+                    if isinstance(x, dict)
+                    and isinstance(x.get("created_utc"), (int, float))
+                ),
+                default=None,
+            ),
+            "returned_records": len(payload["data"]),
         }
     )
     signals = []
@@ -327,11 +337,22 @@ def collect_public_reddit_signals(subreddit, retries=3, limit=25):
         return signals, True
     signals, success = fetch_arctic_shift(subreddit, retries, limit)
     if success and not signals:
-        # Bounded server-side intent searches, rather than broadening the classifier.
-        for query_text in ("manually", "looking for a tool"):
-            found, available = fetch_arctic_shift(subreddit, retries, limit, query_text)
+        # Up to four pages; sparse intent matches must not be fabricated.
+        previous = None
+        for _ in range(3):
+            event = FETCH_EVENTS[-1] if FETCH_EVENTS else {}
+            oldest = event.get("oldest_created_utc")
+            if (
+                event.get("returned_records", 0) < limit
+                or oldest is None
+                or oldest <= time.time() - MAX_AGE_DAYS * 86400
+                or oldest == previous
+            ):
+                break
+            previous = oldest
+            found, available = fetch_arctic_shift(subreddit, retries, limit, oldest)
             signals.extend(found)
-            if not available:
+            if not available or signals:
                 break
     return signals, success
 
