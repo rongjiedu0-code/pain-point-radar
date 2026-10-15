@@ -73,6 +73,8 @@ jobs:
           name: radar-v3-${{ github.run_id }}
           path: |
             radar_run.log
+            radar_diagnostics.json
+            radar_seen.json
             radar_latest_scan.csv
             pain_point_radar_batch_test.csv
           if-no-files-found: warn
@@ -82,7 +84,7 @@ jobs:
         run: |
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git config user.name 'github-actions[bot]'
-          for file in radar_latest_scan.csv pain_point_radar_batch_test.csv; do
+          for file in radar_latest_scan.csv pain_point_radar_batch_test.csv radar_seen.json radar_diagnostics.json; do
             if [ -f "$file" ]; then git add -- "$file"; fi
           done
           if ! git diff --staged --quiet; then

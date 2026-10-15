@@ -10,6 +10,22 @@
 
 Pain Point Radar scans Reddit communities (**r/SaaS**, **r/smallbusiness**, and **r/SideProject**), filters high-intent complaints, and ranks opportunities with the **Pain-to-Revenue Index**. The V3.1 CLI tries public Reddit JSON, Reddit Atom feeds, and the PullPush archive, with a global HN Algolia fallback. It reuses V2 deterministic scoring and CSV export, uses bounded backoff, and records each result's source and publication/retrieval timestamps. Everything uses Python's standard library.
 
+### Freshness and review update
+
+Live scans now apply a **30-day publication window**, persist canonical URLs in `radar_seen.json`, use stable URL-derived IDs, and export **only new leads**. A successful scan with no new leads writes a header-only CSV. All live rule-scored leads are labeled **WATCHLIST / human review required**; keyword scores do not demonstrate willingness to pay, and `--generate-tweet` no longer produces an unverified opportunity alert. The V2/mock numeric formula below remains a heuristic reference.
+
+`radar_diagnostics.json` records HTTP/parser failures, source coverage, filter counts and export count. A successful HN fallback can still have `coverage=degraded`; it does not restore Reddit coverage. HTTP 200 with a non-Atom body is diagnosed as a parser/source failure.
+
+借鉴 [Crawl4AI 的内容筛选与结构化结果设计](docs/crawl4ai_design_notes.md)，保持标准库采集；未引入浏览器或付费 API。每条线索需人工核对语境、真实替代成本与付费证据。
+
+```bash
+python pain_point_radar_v3_anti_block.py --max-age-days 30 --seen-state radar_seen.json --diagnostics-json radar_diagnostics.json
+# Custom intent queries (up to five); defaults cover three English intent phrases.
+python pain_point_radar_v3_anti_block.py --hn-query '"tired of manually"' --hn-query '"looking for a tool"'
+```
+
+Keep the seen ledger between runs. An existing CSV bootstraps it; do not delete the ledger unless intentionally resetting deduplication. CSV, ledger and diagnostics paths must be distinct and their parent directories must exist.
+
 深雷达支持 Reddit JSON、Atom RSS、PullPush 归档与 HN Algolia 回退，用意图关键词筛选痛点，再以四维启发式规则评分并输出 CSV 和发帖草稿。每条结果保留真实来源与原帖/抓取时间；评分仍需访谈和付费意愿验证。
 
 ## 🧮 1. The 4D Pain-to-Revenue Scoring Formula / 四维评分
@@ -50,13 +66,13 @@ python3 pain_point_radar_v3_anti_block.py --mock-self-test
 # Live Reddit scan / 实时扫描
 python3 pain_point_radar_v3_anti_block.py --subreddits SaaS,smallbusiness,SideProject --limit 15 --output-csv radar_latest_scan.csv
 
-# Print an X thread draft for the top PROCEED lead / 输出发帖草稿
+# Legacy flag: reports that human review is required / 提示人工审核门禁
 python3 pain_point_radar_v3_anti_block.py --limit 20 --generate-tweet
 ```
 
 On Windows, use `python` if `python3` is unavailable.
 
-Outputs: `radar_latest_scan.csv` for live scans; `pain_point_radar_batch_test.csv` for the offline demonstration. Drafts are printed to the terminal; nothing is posted to X automatically.
+Outputs: `radar_latest_scan.csv`, `radar_seen.json` and `radar_diagnostics.json` for live scans; `pain_point_radar_batch_test.csv` for the offline demonstration. Mock drafts are synthetic demonstrations; nothing is posted to X automatically.
 
 Reddit may reject requests or return no matching signals. Check fetch errors and the CSV before interpreting an empty result as an absence of demand.
 
@@ -67,9 +83,9 @@ Reddit may reject requests or return no matching signals. Check fetch errors and
 - `--retries 3` sets a bounded attempt count (1–5); transient HTTP 429/5xx and network failures use exponential backoff with jitter.
 - Numeric `Retry-After` is respected; waits above 60 seconds stop the source instead of retrying early. HTTP 403 and other non-retryable responses stop immediately.
 - Exit status: **0** successful collection, including valid empty feeds or successful HN fallback; **1** all sources failed; **2** partial source failure with no successful HN fallback, or invalid CLI input. HN fallback success is explicitly marked as degraded subreddit coverage. If all sources fail, the existing CSV is preserved.
-- The V3 entry point requires the existing `pain_point_radar_engine.py` beside it. When Reddit JSON fails, it tries `old.reddit.com` Atom RSS, then the PullPush submission archive. If subreddit sources fail or no matching signals are found, it queries HN Algolia once globally with `--hn-query` (default: the exact phrase `"wish there was a tool"`).
+- The V3 entry point requires `pain_point_radar_engine.py` and `radar_quality.py` beside it. When Reddit JSON fails, it tries `old.reddit.com` Atom RSS, then the PullPush submission archive. If subreddit sources fail or yield no fresh unseen signals, HN Algolia is queried globally with three bounded intent phrases. Repeat `--hn-query` up to five times to override these queries; `--limit` applies per query, not to the final combined output.
 - HN uses `tags=(story,comment)` (OR), per the [Algolia API documentation](https://hn.algolia.com/api). HN is a separate community, not replacement coverage of a requested subreddit. PullPush is a third-party archive and may return older posts or be unavailable/rate-limited.
-- CSV adds `Source_Channel`, `Source_Post_ID`, `Source_Created_UTC`, `Retrieved_At_UTC`, and `Ingestion_Endpoint`. `Source_URL` points to the original Reddit/HN discussion. Archives retain their original publication dates and are labeled `pullpush_archive`.
+- CSV adds `Source_Channel`, `Source_Post_ID`, `Source_Created_UTC`, `Retrieved_At_UTC`, `Ingestion_Endpoint`, `Scoring_Method`, `Review_Status` and `Review_Reason`. `Source_URL` points to the original Reddit/HN discussion. Archives retain their original publication dates and are labeled `pullpush_archive`; old, missing-date and implausibly future-dated results are filtered out.
 - Logs report actual HTTP responses and the selected source. There is no proxy rotation, rate-limit bypass, guaranteed HTTP 200, Gemini analysis, V2EX integration, or Markdown summary generation.
 
 V3.1 已接通多源回退、评分、溯源和导出。遇到单源拒绝会停止请求该源并尝试其他公开来源，不伪装模拟数据；是否可用以每次运行日志为准，归档数据不等于刚发布的数据。
@@ -101,9 +117,9 @@ See [autopilot.yml](.github/workflows/autopilot.yml). Actions now runs the **V3*
 
 1. Daily run at **00:00 UTC / 北京时间 08:00**, pushes to main, and manual dispatch.
 2. Syntax and offline regression checks before collection.
-3. V3 live Reddit scan → scoring → CSV export and draft generation, or an explicitly selected **mock** demonstration. No automatic fallback from live failures to mock data.
+3. V3 live Reddit scan → freshness/deduplication → heuristic scoring → review-required CSV export, or an explicitly selected **mock** demonstration. No automatic fallback from live failures to mock data.
 4. Job Summary and downloadable log/CSV artifacts preserve the selected mode and exit status. Partial/all-source failures fail the job; partial results remain available.
-5. Changed CSV ledgers are committed back to main. Commit/push errors remain visible instead of being suppressed.
+5. Changed CSV, seen-state and diagnostics files are committed back to the selected branch. Commit/push errors remain visible instead of being suppressed. Logs, CSV and state/diagnostics are retained in Actions artifacts.
 
 Actions 已切换到 V3。实时失败会明确显示，不再用模拟结果替代；手动 mock 模式单独标记。任务并发按分支串行执行，避免自动提交互相覆盖。
 
