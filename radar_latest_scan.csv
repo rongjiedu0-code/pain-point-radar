@@ -1,1 +1,6 @@
 ID,Category,Opportunity_Title,Original_Quote,Workaround_and_Flaws,Pain_Intensity,Workaround_Cost,Ecosystem_Budget,Competitive_Whitespace,Overall_Score,Scoring_Rationale,MVP_Solution_Concept,Verdict,Source_URL,Source_Channel,Source_Post_ID,Source_Created_UTC,Retrieved_At_UTC,Ingestion_Endpoint,Scoring_Method,Review_Status,Review_Reason
+PR-6e981fdfa96c7a88,小微业务流程自动化 (SMB Workflow Automation),What tools do you use to turn meetings into content?,"I'm exploring the problem of turning meeting conversations into useful content. There are transcription tools, meeting assistants, and social media schedulers, but the workflow between them can still feel disconnected.
+
+
+
+How are you currently handli",尚未从原帖验证；需人工确认当前替代方案与实际成本,7.5,7.0,7.0,6.0,69.5,Keyword-category heuristic only; no independently verified budget or competition. keyword_match_only; willingness_to_pay_and_competition_unverified,特定垂直场景的轻量 Webhook 事件自动化连接微应用,WATCHLIST (待人工验证；规则分不代表付费意愿),https://www.reddit.com/r/SaaS/comments/1x5y8e5/,arctic_shift_archive:r/SaaS,1x5y8e5,2026-10-14T17:58:18+00:00,2026-10-15T07:24:25.766641+00:00,https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=SaaS&limit=25&sort=desc&after=1789457064&before=1792004392,keyword_category_heuristic,human_review_required,keyword_match_only; willingness_to_pay_and_competition_unverified
