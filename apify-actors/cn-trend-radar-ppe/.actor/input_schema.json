@@ -1,0 +1,108 @@
+{
+  "title": "cn-trend-radar-ppe input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "mode": {
+      "title": "Collection mode",
+      "type": "string",
+      "editor": "select",
+      "enum": [
+        "online",
+        "offline"
+      ],
+      "default": "online",
+      "description": "Default performs real collection/analysis. Only server environment OFFLINE_MODE=1 explicitly enables free demo fallback; legacy demo/offline input values do not disable live mode.",
+      "prefill": "online"
+    },
+    "maxItems": {
+      "title": "Maximum billable results",
+      "type": "integer",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 3,
+      "description": "Maximum billable results.",
+      "prefill": 3
+    },
+    "startUrls": {
+      "title": "Public product page URLs",
+      "type": "array",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 20,
+      "description": "Optional public product URLs. Leave empty to fetch real Baidu/Bilibili/Toutiao public trend APIs; trend keywords have null product prices.",
+      "default": [],
+      "prefill": []
+    },
+    "keywords": {
+      "title": "Title keywords (optional)",
+      "type": "array",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 20,
+      "default": [],
+      "description": "Title keywords (optional).",
+      "prefill": []
+    },
+    "rmbPerUsd": {
+      "title": "RMB per US dollar (planning estimate)",
+      "type": "string",
+      "editor": "textfield",
+      "default": "7.20",
+      "description": "User-supplied positive rate. Default is a planning assumption, not a live market quote.",
+      "prefill": "7.20"
+    },
+    "fxRateAsOf": {
+      "title": "Rate date or provenance",
+      "type": "string",
+      "editor": "textfield",
+      "default": "user-supplied planning estimate; not a live rate",
+      "description": "Rate date or provenance.",
+      "prefill": "user-supplied planning estimate; not a live rate"
+    },
+    "titleTranslations": {
+      "title": "Chinese title to English translation overrides",
+      "type": "object",
+      "editor": "json",
+      "default": {},
+      "description": "Chinese title to English translation overrides.",
+      "prefill": {}
+    },
+    "cleaningBackend": {
+      "title": "HTML cleaning backend",
+      "type": "string",
+      "editor": "select",
+      "enum": [
+        "crawl4ai",
+        "stdlib"
+      ],
+      "default": "crawl4ai",
+      "description": "HTML cleaning backend.",
+      "prefill": "crawl4ai"
+    },
+    "trendSources": {
+      "title": "Public trend API sources",
+      "type": "array",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "baidu",
+        "bilibili",
+        "toutiao"
+      ],
+      "prefill": [
+        "baidu",
+        "bilibili",
+        "toutiao"
+      ],
+      "description": "Sources attempted in order when startUrls is empty. Only an all-source failure enables labeled free demo fallback."
+    }
+  }
+}

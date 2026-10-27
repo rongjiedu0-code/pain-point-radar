@@ -1,0 +1,158 @@
+{
+  "actorSpecification": 1,
+  "title": "cn-trend-radar-ppe results",
+  "fields": {
+    "type": "object",
+    "properties": {
+      "title_cn": {
+        "type": "string"
+      },
+      "title_en_slug": {
+        "type": "string"
+      },
+      "price_rmb": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "price_usd_est": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "hot_score": {
+        "type": "number"
+      },
+      "clean_url": {
+        "type": "string"
+      },
+      "title_mapping_method": {
+        "type": "string"
+      },
+      "fx_rate_as_of": {
+        "type": "string"
+      },
+      "is_demo": {
+        "type": "boolean"
+      },
+      "is_fixture": {
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "source": {
+        "type": "string"
+      },
+      "billing_mode": {
+        "type": "string"
+      },
+      "data_mode": {
+        "type": "string"
+      },
+      "record_type": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "title_cn",
+      "title_en_slug",
+      "price_rmb",
+      "price_usd_est",
+      "clean_url"
+    ]
+  },
+  "views": {
+    "overview": {
+      "title": "Results",
+      "description": "Demo columns clearly distinguish bundled examples from real runs.",
+      "transformation": {
+        "fields": [
+          "title_cn",
+          "title_en_slug",
+          "price_rmb",
+          "price_usd_est",
+          "hot_score",
+          "clean_url",
+          "title_mapping_method",
+          "fx_rate_as_of",
+          "is_demo",
+          "is_fixture",
+          "id",
+          "source",
+          "billing_mode",
+          "data_mode",
+          "record_type"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "title_cn": {
+            "label": "Chinese title",
+            "format": "text"
+          },
+          "title_en_slug": {
+            "label": "English keyword slug",
+            "format": "text"
+          },
+          "price_rmb": {
+            "label": "Price (RMB)",
+            "format": "text"
+          },
+          "price_usd_est": {
+            "label": "USD estimate",
+            "format": "text"
+          },
+          "hot_score": {
+            "label": "Heat heuristic",
+            "format": "number"
+          },
+          "clean_url": {
+            "label": "Clean product URL",
+            "format": "link"
+          },
+          "title_mapping_method": {
+            "label": "Mapping method",
+            "format": "text"
+          },
+          "fx_rate_as_of": {
+            "label": "FX assumption",
+            "format": "text"
+          },
+          "is_demo": {
+            "label": "Demo data",
+            "format": "boolean"
+          },
+          "is_fixture": {
+            "label": "Fixture",
+            "format": "boolean"
+          },
+          "id": {
+            "label": "Stable ID",
+            "format": "text"
+          },
+          "source": {
+            "label": "Source",
+            "format": "text"
+          },
+          "billing_mode": {
+            "label": "Billing Mode",
+            "format": "text"
+          },
+          "data_mode": {
+            "label": "Data Mode",
+            "format": "text"
+          },
+          "record_type": {
+            "label": "Record Type",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

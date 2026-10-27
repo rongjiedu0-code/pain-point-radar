@@ -1,0 +1,14 @@
+{
+  "actorSpecification": 1,
+  "name": "cn-trend-radar-ppe",
+  "title": "China Trend Radar: Bilingual Product Data & USD Estimates",
+  "description": "China Trend Radar: Bilingual Product Data & USD Estimates. Explicit Pay-Per-Event billing with budget-aware output and offline examples.",
+  "version": "1.2",
+  "input": "./input_schema.json",
+  "dockerfile": "../Dockerfile",
+  "readme": "../README.md",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  },
+  "dockerContextDir": ".."
+}

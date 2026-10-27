@@ -1,0 +1,15 @@
+{
+  "mode": "online",
+  "maxItems": 3,
+  "startUrls": [],
+  "keywords": [],
+  "rmbPerUsd": "7.20",
+  "fxRateAsOf": "user-supplied planning estimate; not a live rate",
+  "titleTranslations": {},
+  "cleaningBackend": "crawl4ai",
+  "trendSources": [
+    "baidu",
+    "bilibili",
+    "toutiao"
+  ]
+}

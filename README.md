@@ -1,3 +1,29 @@
+<!-- APIFY-PHASE3-START -->
+[![Deploy to Apify Store](https://img.shields.io/badge/Apify_Store-Deploy_Actor-orange)](https://console.apify.com/actors)
+[![Connect via Apify MCP](https://img.shields.io/badge/Connect_via-Apify_MCP-blue)](https://docs.apify.com/mcp)
+[![Apify tests and deployment](https://github.com/rongjiedu0-code/pain-point-radar/actions/workflows/deploy-apify.yml/badge.svg)](https://github.com/rongjiedu0-code/pain-point-radar/actions/workflows/deploy-apify.yml)
+
+## Apify Actors: live collection and analysis
+
+| Actor | Code | Default mode |
+|---|---|---|
+| `startup-pain-point-radar-ppe` | [Source](apify-actors/startup-pain-point-radar-ppe) | `online` |
+| `cn-trend-radar-ppe` | [Source](apify-actors/cn-trend-radar-ppe) | `online` |
+
+Zero input now performs real public API collection or real AST/regex analysis. Set the Actor environment variable `OFFLINE_MODE=1` only for explicit offline demonstration. When every configured public source fails, fallback rows are clearly marked `is_demo=true`, `source=demo_fallback`; they bypass **all** `Actor.charge()` calls, including startup billing. A successful empty search remains empty. Static audit findings map to CWE; CVE identifiers are not invented.
+
+Import this repository in Apify Console. The root `.actor` configuration builds `startup-pain-point-radar-ppe`; the other Actor, if listed above, can use `#main:apify-actors/<actor-name>`. Every Actor has its own build context, schema and Dockerfile. The original local CLI remains available; these optional Actor packages have separate SDK requirements.
+
+```bash
+cd apify-actors/startup-pain-point-radar-ppe
+python -m pip install -r requirements-dev.txt
+python -m unittest discover -s tests -p "test_*.py" -v
+npx --yes apify-cli@latest push
+```
+
+GitHub Actions runs the Actor tests and schema checks on main updates. Add the `APIFY_TOKEN` repository Actions secret to enable actual cloud deployment; without it deployment is explicitly skipped. This badge is a deployment entry point, not a claim that a public Store listing already exists. Configure PPE pricing and publish the Store page in Console. Once published with appropriate access, run the Actor through [Apify MCP](https://docs.apify.com/mcp); no standalone native MCP server is claimed for the batch Actor.
+<!-- APIFY-PHASE3-END -->
+
 # 📡 Pain Point Radar (深雷达) — Automated SaaS Pain Discovery & 4D Scoring Engine
 
 [![AI Agent & Pain Point Radar Autopilot](https://github.com/rongjiedu0-code/pain-point-radar/actions/workflows/autopilot.yml/badge.svg)](https://github.com/rongjiedu0-code/pain-point-radar/actions/workflows/autopilot.yml)

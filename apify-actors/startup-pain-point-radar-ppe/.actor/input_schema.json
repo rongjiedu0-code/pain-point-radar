@@ -1,0 +1,96 @@
+{
+  "title": "startup-pain-point-radar-ppe input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "mode": {
+      "title": "Collection mode",
+      "type": "string",
+      "editor": "select",
+      "enum": [
+        "online",
+        "offline"
+      ],
+      "default": "online",
+      "description": "Default performs real collection/analysis. Only server environment OFFLINE_MODE=1 explicitly enables free demo fallback; legacy demo/offline input values do not disable live mode.",
+      "prefill": "online"
+    },
+    "maxItems": {
+      "title": "Maximum billable results",
+      "type": "integer",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 3,
+      "description": "Maximum billable results.",
+      "prefill": 3
+    },
+    "keywords": {
+      "title": "Pain keywords",
+      "type": "array",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "maxItems": 10,
+      "default": [
+        "manual spreadsheet",
+        "wish there was a tool"
+      ],
+      "description": "Pain keywords.",
+      "prefill": [
+        "manual spreadsheet",
+        "wish there was a tool"
+      ]
+    },
+    "sources": {
+      "title": "Public sources",
+      "type": "array",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "maxItems": 3,
+      "default": [
+        "hackernews",
+        "github_issues"
+      ],
+      "description": "Public sources.",
+      "prefill": [
+        "hackernews",
+        "github_issues"
+      ]
+    },
+    "subreddits": {
+      "title": "Subreddits",
+      "type": "array",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "maxItems": 5,
+      "default": [
+        "SaaS",
+        "smallbusiness"
+      ],
+      "description": "Subreddits.",
+      "prefill": [
+        "SaaS",
+        "smallbusiness"
+      ]
+    },
+    "minPainScore": {
+      "title": "Minimum heuristic pain score",
+      "type": "integer",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 45,
+      "description": "Minimum heuristic pain score.",
+      "prefill": 45
+    }
+  }
+}

@@ -1,0 +1,5 @@
+[
+  {"source":"hackernews","native_id":"demo-hn-1","title":"Wish there was a tool for manual invoice spreadsheets","text":"Manual reconciliation is frustrating and too expensive. We spend hours every week.","url":"https://example.com/fixtures/hn-invoices","points":25,"comments":12,"is_fixture":true},
+  {"source":"github_issues","native_id":"demo-gh-1","title":"Broken API limit and webhook workaround","text":"Manual retries are painful and frustrating","url":"https://example.com/fixtures/github-webhooks","points":10,"comments":6,"is_fixture":true},
+  {"source":"reddit","native_id":"demo-reddit-1","title":"Tired of manually copying spreadsheets","text":"We hate this manual workaround and waste hours every week","url":"https://example.com/fixtures/reddit-workflow","is_fixture":true}
+]

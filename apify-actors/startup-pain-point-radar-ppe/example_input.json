@@ -1,0 +1,17 @@
+{
+  "mode": "online",
+  "maxItems": 3,
+  "keywords": [
+    "manual spreadsheet",
+    "wish there was a tool"
+  ],
+  "sources": [
+    "hackernews",
+    "github_issues"
+  ],
+  "subreddits": [
+    "SaaS",
+    "smallbusiness"
+  ],
+  "minPainScore": 45
+}
